@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D棚設計アプリ - 軽量MVP</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .controls {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #007acc;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .viewport {
+            flex: 1;
+            position: relative;
+        }
+
+        #canvas {
+            display: block;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 100%);
+        }
+
+        .dimensions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <div class="title">3D棚設計</div>
+            
+            <div class="control-group">
+                <h3>サイズ調整</h3>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>幅</span>
+                        <span id="widthValue">100cm</span>
+                    </div>
+                    <input type="range" id="widthSlider" class="slider" min="50" max="200" value="100">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>高さ（50–150cm）</span>
+                        <span id="heightValue">150cm</span>
+                    </div>
+                    <input type="range" id="heightSlider" class="slider" min="50" max="150" value="150" step="1">
+                </div>
+
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>奥行き</span>
+                        <span id="depthValue">40cm</span>
+                    </div>
+                    <input type="range" id="depthSlider" class="slider" min="20" max="80" value="40">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>構造設定</h3>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>段数</span>
+                        <span id="shelvesValue">4段</span>
+                    </div>
+                    <input type="range" id="shelvesSlider" class="slider" min="2" max="8" value="4">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>外観設定</h3>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>色</span>
+                    </div>
+                    <input type="color" id="colorPicker" class="color-picker" value="#8B4513">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>表示設定</h3>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>人物モデル（170cm）</span>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+                        <input type="checkbox" id="toggleHuman" style="margin: 0;">
+                        <span>表示する</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="viewport">
+            <canvas id="canvas"></canvas>
+            <div class="dimensions" id="dimensions">
+                <div><strong>現在の寸法</strong></div>
+                <div>幅: <span id="dimWidth">100</span>cm</div>
+                <div>高さ: <span id="dimHeight">150</span>cm</div>
+                <div>奥行き: <span id="dimDepth">40</span>cm</div>
+                <div>段数: <span id="dimShelves">4</span>段</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
