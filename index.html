@@ -235,8 +235,10 @@
                 
                 <div style="margin-top: 15px; font-size: 11px; color: #666;">
                     <div><strong>操作方法:</strong></div>
-                    <div>• 板をクリック: 個別選択・ドラッグ移動</div>
-                    <div>• Shift+ドラッグ: 箱モジュール全体移動</div>
+                    <div>• <strong>シングルクリック</strong>: 箱全体選択・上下左右移動・サイズ調整</div>
+                    <div>• <strong>ダブルクリック</strong>: 個別板選択・個別サイズ調整</div>
+                    <div>• 支柱・棚板の幅調整機能</div>
+                    <div>• 削除部品の復活機能</div>
                     <div>• Delete: 選択板を削除</div>
                 </div>
             </div>
@@ -249,10 +251,36 @@
                 </div>
             </div>
 
+            <!-- 選択板編集パネル -->
+            <div class="control-group" id="selectedBoardPanel" style="display: none;">
+                <h3>選択板の編集</h3>
+                <div id="selectedBoardInfo"></div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">サイズ調整</h4>
+                    <div id="boardSizeControls"></div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">位置調整</h4>
+                    <div id="boardPositionControls"></div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="addSupportToBoard" class="add-btn" style="font-size: 11px; padding: 6px;">+ この板に支柱追加</button>
+                    <button id="removeBoardBtn" class="remove-btn" style="width: 100%; margin-top: 5px;">板を削除</button>
+                </div>
+            </div>
+
             <!-- 選択箱編集パネル -->
             <div class="control-group" id="selectedBoxPanel" style="display: none;">
                 <h3>選択箱の編集</h3>
                 <div id="selectedBoxInfo"></div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">箱のサイズ調整</h4>
+                    <div id="boxSizeControls"></div>
+                </div>
                 
                 <div style="margin-top: 15px;">
                     <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">支柱</h4>
@@ -265,36 +293,13 @@
                     <div id="shelvesList"></div>
                     <button id="addShelf" class="add-btn" style="font-size: 11px; padding: 6px;">+ 棚板追加</button>
                 </div>
-            </div>
-
-            <!-- デフォルト設定 -->
-            <div class="control-group">
-                <h3>デフォルト設定</h3>
                 
-                <div class="slider-container">
-                    <div class="slider-label">
-                        <span>幅</span>
-                        <span id="defaultWidth">60cm</span>
-                    </div>
-                    <input type="range" id="defaultWidthSlider" class="slider" min="30" max="120" value="60">
-                </div>
-
-                <div class="slider-container">
-                    <div class="slider-label">
-                        <span>高さ</span>
-                        <span id="defaultHeight">80cm</span>
-                    </div>
-                    <input type="range" id="defaultHeightSlider" class="slider" min="40" max="200" value="80">
-                </div>
-
-                <div class="slider-container">
-                    <div class="slider-label">
-                        <span>奥行き</span>
-                        <span id="defaultDepth">30cm</span>
-                    </div>
-                    <input type="range" id="defaultDepthSlider" class="slider" min="15" max="60" value="30">
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">削除部品の復活</h4>
+                    <div id="deletedComponentsList"></div>
                 </div>
             </div>
+
 
             <!-- 人物表示 -->
             <div class="control-group">
