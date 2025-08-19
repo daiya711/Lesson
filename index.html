@@ -108,64 +108,195 @@
             color: #333;
             text-align: center;
         }
+
+        .module-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .module-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .module-toggle input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .thickness-btn {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .thickness-btn:hover {
+            background: #005a9e;
+        }
+
+        .add-btn {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .add-btn:hover {
+            background: #218838;
+        }
+
+        .shelf-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .shelf-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .height-input {
+            width: 60px;
+            padding: 2px 4px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .support-item, .shelf-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 6px;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+
+        .support-controls, .shelf-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .position-input {
+            width: 40px;
+            padding: 2px 4px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="controls">
-            <div class="title">3D棚設計</div>
+            <div class="title">箱モジュール設計ツール</div>
             
+            <!-- 箱モジュール操作 -->
             <div class="control-group">
-                <h3>サイズ調整</h3>
+                <h3>箱モジュール</h3>
+                
+                <button id="addBoxModule" class="add-btn">+ 新しい箱モジュール</button>
+                <button id="createLShape" class="add-btn" style="background: #6f42c1;">L字型テンプレート</button>
+                <button id="clearAll" class="remove-btn" style="width: 100%; margin-top: 5px;">全てクリア</button>
+                
+                <div style="margin-top: 15px; font-size: 11px; color: #666;">
+                    <div><strong>操作方法:</strong></div>
+                    <div>• 板をクリック: 個別選択・ドラッグ移動</div>
+                    <div>• Shift+ドラッグ: 箱モジュール全体移動</div>
+                    <div>• Delete: 選択板を削除</div>
+                </div>
+            </div>
+
+            <!-- 箱モジュール一覧 -->
+            <div class="control-group">
+                <h3>箱モジュール一覧</h3>
+                <div id="boxModuleList">
+                    <!-- 動的に追加される箱モジュール -->
+                </div>
+            </div>
+
+            <!-- 選択箱編集パネル -->
+            <div class="control-group" id="selectedBoxPanel" style="display: none;">
+                <h3>選択箱の編集</h3>
+                <div id="selectedBoxInfo"></div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">支柱</h4>
+                    <div id="supportsList"></div>
+                    <button id="addSupport" class="add-btn" style="font-size: 11px; padding: 6px;">+ 支柱追加</button>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">棚板</h4>
+                    <div id="shelvesList"></div>
+                    <button id="addShelf" class="add-btn" style="font-size: 11px; padding: 6px;">+ 棚板追加</button>
+                </div>
+            </div>
+
+            <!-- デフォルト設定 -->
+            <div class="control-group">
+                <h3>デフォルト設定</h3>
                 
                 <div class="slider-container">
                     <div class="slider-label">
                         <span>幅</span>
-                        <span id="widthValue">100cm</span>
+                        <span id="defaultWidth">60cm</span>
                     </div>
-                    <input type="range" id="widthSlider" class="slider" min="50" max="200" value="100">
+                    <input type="range" id="defaultWidthSlider" class="slider" min="30" max="120" value="60">
                 </div>
 
                 <div class="slider-container">
                     <div class="slider-label">
-                        <span>高さ（50–150cm）</span>
-                        <span id="heightValue">150cm</span>
+                        <span>高さ</span>
+                        <span id="defaultHeight">80cm</span>
                     </div>
-                    <input type="range" id="heightSlider" class="slider" min="50" max="150" value="150" step="1">
+                    <input type="range" id="defaultHeightSlider" class="slider" min="40" max="200" value="80">
                 </div>
 
                 <div class="slider-container">
                     <div class="slider-label">
                         <span>奥行き</span>
-                        <span id="depthValue">40cm</span>
+                        <span id="defaultDepth">30cm</span>
                     </div>
-                    <input type="range" id="depthSlider" class="slider" min="20" max="80" value="40">
+                    <input type="range" id="defaultDepthSlider" class="slider" min="15" max="60" value="30">
                 </div>
             </div>
 
-            <div class="control-group">
-                <h3>構造設定</h3>
-                
-                <div class="slider-container">
-                    <div class="slider-label">
-                        <span>段数</span>
-                        <span id="shelvesValue">4段</span>
-                    </div>
-                    <input type="range" id="shelvesSlider" class="slider" min="2" max="8" value="4">
-                </div>
-            </div>
-
-            <div class="control-group">
-                <h3>外観設定</h3>
-                
-                <div class="slider-container">
-                    <div class="slider-label">
-                        <span>色</span>
-                    </div>
-                    <input type="color" id="colorPicker" class="color-picker" value="#8B4513">
-                </div>
-            </div>
-
+            <!-- 人物表示 -->
             <div class="control-group">
                 <h3>表示設定</h3>
                 
@@ -192,8 +323,8 @@
             </div>
         </div>
     </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="app.js"></script>
 </body>
