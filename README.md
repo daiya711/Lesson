@@ -41,6 +41,21 @@
 - Edge
 - WebGL対応端末
 
+## デプロイメント
+
+### Cloudflare Pages
+このプロジェクトはCloudflare Pagesでホスティングされています。
+
+**デプロイ設定**:
+- **ブランチ**: `feature/enhancement`
+- **ビルドコマンド**: なし（静的サイト）
+- **出力ディレクトリ**: `/`（ルート）
+- **自動最適化**: 有効
+
+**アクセス方法**:
+- デプロイ後に提供される`https://プロジェクト名.pages.dev`でアクセス可能
+- Cloudflare CDNによる高速配信
+
 ## ライセンス
 MIT License
 
