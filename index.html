@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D棚設計アプリ - 軽量MVP</title>
+    <title>収納棚設計・デザインプラットフォーム</title>
     <style>
         body {
             margin: 0;
@@ -223,81 +223,138 @@
 <body>
     <div class="container">
         <div class="controls">
-            <div class="title">箱モジュール設計ツール</div>
+            <div class="title">収納棚設計プラットフォーム</div>
             
-            <!-- 箱モジュール操作 -->
+            <!-- 箱テンプレート操作 -->
             <div class="control-group">
-                <h3>箱モジュール</h3>
+                <h3>箱テンプレート編集</h3>
                 
-                <button id="addBoxModule" class="add-btn">+ 新しい箱モジュール</button>
-                <button id="createLShape" class="add-btn" style="background: #6f42c1;">L字型テンプレート</button>
-                <button id="clearAll" class="remove-btn" style="width: 100%; margin-top: 5px;">全てクリア</button>
+                <div id="templateSizeControls">
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>幅 (cm)</span>
+                            <span id="widthValue">80</span>
+                        </div>
+                        <input type="range" id="widthSlider" class="slider" min="30" max="200" value="80">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>高さ (cm)</span>
+                            <span id="heightValue">180</span>
+                        </div>
+                        <input type="range" id="heightSlider" class="slider" min="50" max="250" value="180">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>奥行き (cm)</span>
+                            <span id="depthValue">35</span>
+                        </div>
+                        <input type="range" id="depthSlider" class="slider" min="20" max="80" value="35">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">構成板</h4>
+                    <div id="boardToggles">
+                        <label class="module-toggle"><input type="checkbox" id="topEnabled" checked> 天板</label>
+                        <label class="module-toggle"><input type="checkbox" id="bottomEnabled" checked> 底板</label>
+                        <label class="module-toggle"><input type="checkbox" id="leftEnabled" checked> 左側板</label>
+                        <label class="module-toggle"><input type="checkbox" id="rightEnabled" checked> 右側板</label>
+                        <label class="module-toggle"><input type="checkbox" id="backEnabled" checked> 背板</label>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="convertToIndividual" class="add-btn">個別板モードに切替</button>
+                    <button id="resetTemplate" class="add-btn" style="background: #6c757d;">初期状態に戻す</button>
+                </div>
                 
                 <div style="margin-top: 15px; font-size: 11px; color: #666;">
                     <div><strong>操作方法:</strong></div>
-                    <div>• <strong>シングルクリック</strong>: 箱全体選択・上下左右移動・サイズ調整</div>
-                    <div>• <strong>ダブルクリック</strong>: 個別板選択・個別サイズ調整</div>
-                    <div>• 支柱・棚板の幅調整機能</div>
-                    <div>• 削除部品の復活機能</div>
+                    <div>• <strong>シングルクリック</strong>: テンプレート全体選択</div>
+                    <div>• <strong>ダブルクリック</strong>: 個別板選択・編集</div>
                     <div>• Delete: 選択板を削除</div>
                 </div>
             </div>
 
-            <!-- 箱モジュール一覧 -->
+            <!-- 個別板追加 -->
             <div class="control-group">
-                <h3>箱モジュール一覧</h3>
-                <div id="boxModuleList">
-                    <!-- 動的に追加される箱モジュール -->
+                <h3>個別板追加</h3>
+                
+                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <button id="addHorizontalBoard" class="add-btn" style="flex: 1;">水平板追加</button>
+                    <button id="addVerticalBoard" class="add-btn" style="flex: 1;">垂直板追加</button>
+                </div>
+                
+                <div id="independentBoardsList">
+                    <!-- 動的に追加される個別板 -->
                 </div>
             </div>
 
-            <!-- 選択板編集パネル -->
-            <div class="control-group" id="selectedBoardPanel" style="display: none;">
-                <h3>選択板の編集</h3>
-                <div id="selectedBoardInfo"></div>
+            <!-- テンプレート板編集パネル -->
+            <div class="control-group" id="templateBoardPanel" style="display: none;">
+                <h3>テンプレート板編集</h3>
+                <div id="templateBoardInfo"></div>
                 
                 <div style="margin-top: 15px;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">サイズ調整</h4>
-                    <div id="boardSizeControls"></div>
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">サイズ調整</h4>
+                    <div id="templateBoardSizeControls"></div>
                 </div>
                 
                 <div style="margin-top: 15px;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">位置調整</h4>
-                    <div id="boardPositionControls"></div>
+                    <button id="disableTemplateBoard" class="remove-btn" style="width: 100%;">この板を無効化</button>
+                </div>
+            </div>
+            
+            <!-- 個別板編集パネル -->
+            <div class="control-group" id="individualBoardPanel" style="display: none;">
+                <h3>個別板編集</h3>
+                <div id="individualBoardInfo"></div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">寸法</h4>
+                    <div id="individualBoardSizeControls"></div>
                 </div>
                 
                 <div style="margin-top: 15px;">
-                    <button id="addSupportToBoard" class="add-btn" style="font-size: 11px; padding: 6px;">+ この板に支柱追加</button>
-                    <button id="removeBoardBtn" class="remove-btn" style="width: 100%; margin-top: 5px;">板を削除</button>
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">位置</h4>
+                    <div id="individualBoardPositionControls"></div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">向き</h4>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="setHorizontal" class="thickness-btn" style="flex: 1;">水平</button>
+                        <button id="setVertical" class="thickness-btn" style="flex: 1;">垂直</button>
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <label style="font-size: 11px;">回転 (度): </label>
+                        <input type="number" id="boardRotation" value="0" min="0" max="360" step="90" style="width: 60px;">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="deleteIndividualBoard" class="remove-btn" style="width: 100%;">個別板を削除</button>
                 </div>
             </div>
 
-            <!-- 選択箱編集パネル -->
-            <div class="control-group" id="selectedBoxPanel" style="display: none;">
-                <h3>選択箱の編集</h3>
-                <div id="selectedBoxInfo"></div>
+            <!-- データ管理 -->
+            <div class="control-group">
+                <h3>データ管理</h3>
                 
-                <div style="margin-top: 15px;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">箱のサイズ調整</h4>
-                    <div id="boxSizeControls"></div>
+                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <button id="saveDesign" class="add-btn" style="flex: 1;">保存</button>
+                    <button id="loadDesign" class="thickness-btn" style="flex: 1;">読込</button>
                 </div>
                 
-                <div style="margin-top: 15px;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">支柱</h4>
-                    <div id="supportsList"></div>
-                    <button id="addSupport" class="add-btn" style="font-size: 11px; padding: 6px;">+ 支柱追加</button>
+                <div style="display: flex; gap: 5px;">
+                    <button id="exportBOM" class="thickness-btn" style="flex: 1;">部材リスト</button>
+                    <button id="exportImage" class="thickness-btn" style="flex: 1;">画像出力</button>
                 </div>
                 
-                <div style="margin-top: 15px;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">棚板</h4>
-                    <div id="shelvesList"></div>
-                    <button id="addShelf" class="add-btn" style="font-size: 11px; padding: 6px;">+ 棚板追加</button>
-                </div>
-                
-                <div style="margin-top: 15px;">
-                    <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #333;">削除部品の復活</h4>
-                    <div id="deletedComponentsList"></div>
-                </div>
+                <input type="file" id="loadFile" accept=".json" style="display: none;">
             </div>
 
 
@@ -320,11 +377,10 @@
         <div class="viewport">
             <canvas id="canvas"></canvas>
             <div class="dimensions" id="dimensions">
-                <div><strong>現在の寸法</strong></div>
-                <div>幅: <span id="dimWidth">100</span>cm</div>
-                <div>高さ: <span id="dimHeight">150</span>cm</div>
-                <div>奥行き: <span id="dimDepth">40</span>cm</div>
-                <div>段数: <span id="dimShelves">4</span>段</div>
+                <div><strong>設計情報</strong></div>
+                <div>テンプレート: <span id="templateSize">80×180×35cm</span></div>
+                <div>個別板数: <span id="independentCount">0</span>枚</div>
+                <div>編集モード: <span id="editMode">テンプレート</span></div>
             </div>
         </div>
     </div>
