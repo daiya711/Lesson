@@ -1,0 +1,58 @@
+# Cloudflare Pages デプロイ除外設定
+# 大きなファイル・不要ファイルを除外してデプロイサイズを最適化
+
+# Node.js関連
+node_modules/
+package*.json
+tsconfig.json
+.npm/
+.node_repl_history
+
+# Git関連  
+.git/
+.gitignore
+.gitattributes
+
+# Wrangler関連
+.wrangler/
+wrangler.toml
+
+# 開発・ビルド関連
+dist/
+build/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.vuepress/
+
+# 環境・設定ファイル
+.env*
+.DS_Store
+Thumbs.db
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# ソースコード・開発用ファイル
+src/db/
+migrations/
+*.sql
+
+# ドキュメント・メタファイル
+docs/
+README.md
+TODO.md
+CLAUDE.md
+*.md
+
+# TypeScript設定
+tsconfig.json
+
+# その他の設定ファイル
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

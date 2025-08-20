@@ -4,6 +4,8 @@ compatibility_date = "2025-01-20"
 # 静的サイト（Pages）用設定
 [assets]
 directory = "."
+include = ["*.html", "*.js", "*.css", "_headers", "assets/**/*", "src/api/**/*"]
+exclude = ["node_modules/**/*", ".git/**/*", "src/db/**/*", "migrations/**/*", "docs/**/*", "*.md", "package*.json", "tsconfig.json"]
 
 # D1 Database binding
 [[d1_databases]]
