@@ -12,6 +12,6 @@ database_id = "40bfceaa-1a06-4d58-b1a2-957f2da6d852"
 
 # Environment Variables
 [vars]
-API_BASE_URL = "https://lesson2.pages.dev"
+API_BASE_URL = "https://lesson2-apo.pages.dev"
 NODE_VERSION = "18"
 
