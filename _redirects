@@ -1,7 +1,4 @@
 # Cloudflare Pages リダイレクト設定
-# SPA対応 - すべての存在しないパスをindex.htmlにリダイレクト
-/*    /index.html   200
-
-# セキュリティ - 不要なパスのブロック
-/.git/*   /404.html   404
-/docs/*   /404.html   404
+# SPA対応 - 存在しないパスをindex.htmlにリダイレクト
+/app/*    /index.html   200
+/design/*    /index.html   200
