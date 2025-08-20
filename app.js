@@ -805,6 +805,7 @@ class ViewportManager {
         this.cameraTargetY = 0;
         this.cameraTargetZ = 0;
         this.isMouseDown = false;
+        this.isPanMode = false; // 右クリックでパンモード
         this.mouseX = 0;
         this.mouseY = 0;
         this.targetRotationX = 0;
@@ -900,10 +901,19 @@ class ViewportManager {
     
     setupCameraControls() {
         this.canvas.addEventListener('mousedown', (event) => {
-            if (event.button === 1) { // 中ボタン（ホイールクリック）でカメラ操作
+            if (event.button === 0 || event.button === 1) { // 左クリックまたは中ボタンで回転操作
                 this.isMouseDown = true;
+                this.isPanMode = false;
                 this.mouseX = event.clientX;
                 this.mouseY = event.clientY;
+                console.log('カメラ回転操作開始:', event.button === 0 ? '左クリック' : '中ボタン');
+                event.preventDefault();
+            } else if (event.button === 2) { // 右クリックでパン操作
+                this.isMouseDown = true;
+                this.isPanMode = true;
+                this.mouseX = event.clientX;
+                this.mouseY = event.clientY;
+                console.log('カメラパン操作開始: 右クリック');
                 event.preventDefault();
             }
         });
@@ -913,11 +923,20 @@ class ViewportManager {
                 const deltaX = event.clientX - this.mouseX;
                 const deltaY = event.clientY - this.mouseY;
                 
-                this.targetRotationX += deltaX * 0.01;
-                this.targetRotationY += deltaY * 0.01;
-                
-                // Y軸回転を制限
-                this.targetRotationY = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.targetRotationY));
+                if (this.isPanMode) {
+                    // 右クリック: パン操作
+                    const panSensitivity = 0.5;
+                    this.cameraTargetX -= deltaX * panSensitivity;
+                    this.cameraTargetY += deltaY * panSensitivity;
+                    console.log('カメラパン:', this.cameraTargetX.toFixed(1), this.cameraTargetY.toFixed(1));
+                } else {
+                    // 左クリック/中ボタン: 回転操作
+                    this.targetRotationX += deltaX * 0.01;
+                    this.targetRotationY += deltaY * 0.01;
+                    
+                    // Y軸回転を制限
+                    this.targetRotationY = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.targetRotationY));
+                }
                 
                 this.updateCameraPosition();
                 
@@ -928,8 +947,10 @@ class ViewportManager {
         });
         
         this.canvas.addEventListener('mouseup', (event) => {
-            if (event.button === 1) {
+            if (event.button === 0 || event.button === 1 || event.button === 2) {
                 this.isMouseDown = false;
+                this.isPanMode = false;
+                console.log('カメラ操作終了');
                 event.preventDefault();
             }
         });
@@ -1082,21 +1103,37 @@ class UIManager {
         this.currentPanel = 'template';
         this.listeners = new Map();
         this.highlightedObject = null;
-        this.setupUIEventListeners();
+        
+        // DOM読み込み完了後にUIイベントリスナーを設定
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('DOMContentLoaded: UIEventListeners初期化開始');
+                this.setupUIEventListeners();
+            });
+        } else {
+            console.log('DOM既に読み込み済み: UIEventListeners即座に初期化');
+            this.setupUIEventListeners();
+        }
     }
     
     setupUIEventListeners() {
+        console.log('UIEventListeners設定開始');
+        
         // テンプレートサイズスライダー
         ['width', 'height', 'depth'].forEach(dimension => {
             const slider = document.getElementById(`${dimension}Slider`);
             const value = document.getElementById(`${dimension}Value`);
             
             if (slider && value) {
+                console.log(`${dimension}スライダー: イベントリスナー設定完了`);
                 slider.addEventListener('input', (e) => {
                     const newValue = parseInt(e.target.value);
                     value.textContent = newValue;
+                    console.log(`${dimension}サイズ変更:`, newValue);
                     this.emit('templateSizeChanged', { [dimension]: newValue });
                 });
+            } else {
+                console.warn(`${dimension}スライダー要素が見つかりません:`, {slider, value});
             }
         });
         
@@ -1104,9 +1141,13 @@ class UIManager {
         ['top', 'bottom', 'left', 'right', 'back'].forEach(boardType => {
             const checkbox = document.getElementById(`${boardType}Enabled`);
             if (checkbox) {
+                console.log(`${boardType}板チェックボックス: イベントリスナー設定完了`);
                 checkbox.addEventListener('change', (e) => {
+                    console.log(`${boardType}板切替:`, e.target.checked);
                     this.emit('boardToggled', boardType, e.target.checked);
                 });
+            } else {
+                console.warn(`${boardType}板チェックボックスが見つかりません`);
             }
         });
         
@@ -1115,15 +1156,23 @@ class UIManager {
         const addVerticalBtn = document.getElementById('addVerticalBoard');
         
         if (addHorizontalBtn) {
+            console.log('水平板追加ボタン: イベントリスナー設定完了');
             addHorizontalBtn.addEventListener('click', () => {
+                console.log('水平板追加ボタンクリック');
                 this.emit('addHorizontalBoard');
             });
+        } else {
+            console.warn('水平板追加ボタンが見つかりません');
         }
         
         if (addVerticalBtn) {
+            console.log('垂直板追加ボタン: イベントリスナー設定完了');
             addVerticalBtn.addEventListener('click', () => {
+                console.log('垂直板追加ボタンクリック');
                 this.emit('addVerticalBoard');
             });
+        } else {
+            console.warn('垂直板追加ボタンが見つかりません');
         }
         
         // その他のボタン
@@ -1131,19 +1180,30 @@ class UIManager {
         const resetBtn = document.getElementById('resetTemplate');
         
         if (convertBtn) {
+            console.log('個別板モード切替ボタン: イベントリスナー設定完了');
             convertBtn.addEventListener('click', () => {
+                console.log('個別板モード切替ボタンクリック');
                 this.emit('convertToIndividual');
             });
+        } else {
+            console.warn('個別板モード切替ボタンが見つかりません');
         }
         
         if (resetBtn) {
+            console.log('リセットボタン: イベントリスナー設定完了');
             resetBtn.addEventListener('click', () => {
+                console.log('リセットボタンクリック');
                 this.emit('resetTemplate');
             });
+        } else {
+            console.warn('リセットボタンが見つかりません');
         }
         
         // 構造チェックボタン（JavaScriptで動的作成）
+        console.log('構造チェックボタン作成開始');
         this.createStructureCheckButton();
+        
+        console.log('UIEventListeners設定完了');
     }
     
     showTemplateEditPanel() {
@@ -1444,7 +1504,10 @@ class UIManager {
     createStructureCheckButton() {
         // データ管理セクションの後に構造チェックセクションを動的作成
         const dataSection = document.querySelector('.control-group:has(#saveDesign)');
+        console.log('データ管理セクション検索結果:', dataSection);
+        
         if (dataSection && !document.getElementById('structureCheck')) {
+            console.log('構造チェックボタンを動的作成中...');
             const structureSection = document.createElement('div');
             structureSection.className = 'control-group';
             structureSection.innerHTML = `
@@ -1462,10 +1525,17 @@ class UIManager {
             // イベントリスナー設定
             const structureBtn = document.getElementById('structureCheck');
             if (structureBtn) {
+                console.log('構造チェックボタン: イベントリスナー設定完了');
                 structureBtn.addEventListener('click', () => {
+                    console.log('構造チェックボタンクリック');
                     this.emit('structureCheck');
                 });
+            } else {
+                console.error('構造チェックボタンの取得に失敗');
             }
+        } else {
+            console.warn('構造チェックボタン作成条件が満たされません:', {dataSection, existingButton: document.getElementById('structureCheck')});
+        }
         }
     }
     
@@ -1824,10 +1894,23 @@ class StructureChecker {
  */
 class DataManager {
     constructor() {
-        this.setupDataEventListeners();
+        console.log('DataManager初期化開始');
+        
+        // DOM読み込み完了後にイベントリスナーを設定
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('DOMContentLoaded: DataEventListeners初期化開始');
+                this.setupDataEventListeners();
+            });
+        } else {
+            console.log('DOM既に読み込み済み: DataEventListeners即座に初期化');
+            this.setupDataEventListeners();
+        }
     }
     
     setupDataEventListeners() {
+        console.log('DataEventListeners設定開始');
+        
         // データ保存・読込
         const saveBtn = document.getElementById('saveDesign');
         const loadBtn = document.getElementById('loadDesign');
@@ -1836,24 +1919,56 @@ class DataManager {
         const exportImageBtn = document.getElementById('exportImage');
         
         if (saveBtn) {
-            saveBtn.addEventListener('click', () => this.saveDesign());
+            console.log('保存ボタン: イベントリスナー設定完了');
+            saveBtn.addEventListener('click', () => {
+                console.log('保存ボタンクリック');
+                this.saveDesign();
+            });
+        } else {
+            console.warn('保存ボタンが見つかりません');
         }
         
         if (loadBtn) {
-            loadBtn.addEventListener('click', () => loadFile.click());
+            console.log('読込ボタン: イベントリスナー設定完了');
+            loadBtn.addEventListener('click', () => {
+                console.log('読込ボタンクリック');
+                loadFile.click();
+            });
+        } else {
+            console.warn('読込ボタンが見つかりません');
         }
         
         if (loadFile) {
-            loadFile.addEventListener('change', (e) => this.loadDesign(e));
+            console.log('ファイル選択: イベントリスナー設定完了');
+            loadFile.addEventListener('change', (e) => {
+                console.log('ファイル選択変更');
+                this.loadDesign(e);
+            });
+        } else {
+            console.warn('ファイル選択要素が見つかりません');
         }
         
         if (exportBOMBtn) {
-            exportBOMBtn.addEventListener('click', () => this.exportBOM());
+            console.log('部材リスト出力ボタン: イベントリスナー設定完了');
+            exportBOMBtn.addEventListener('click', () => {
+                console.log('部材リスト出力ボタンクリック');
+                this.exportBOM();
+            });
+        } else {
+            console.warn('部材リスト出力ボタンが見つかりません');
         }
         
         if (exportImageBtn) {
-            exportImageBtn.addEventListener('click', () => this.exportImage());
+            console.log('画像出力ボタン: イベントリスナー設定完了');
+            exportImageBtn.addEventListener('click', () => {
+                console.log('画像出力ボタンクリック');
+                this.exportImage();
+            });
+        } else {
+            console.warn('画像出力ボタンが見つかりません');
         }
+        
+        console.log('DataEventListeners設定完了');
     }
     
     saveDesign() {
