@@ -2,20 +2,16 @@ name = "lesson3"
 compatibility_date = "2025-01-20"
 
 # 静的サイト（Pages）用設定
-[assets]
-directory = "public"
+pages_build_output_dir = "public"
 
 # D1 Database binding
 [[d1_databases]]
 binding = "DB"
 database_name = "shelf-designer-db"
-database_id = ""  # wrangler d1 create 実行後に設定
+database_id = "40bfceaa-1a06-4d58-b1a2-957f2da6d852"
 
 # Environment Variables
 [vars]
 API_BASE_URL = "https://lesson3.pages.dev"
 NODE_VERSION = "18"
 
-# Build settings
-[build]
-command = ""
