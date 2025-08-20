@@ -1,7 +1,6 @@
-name = "shelf-designer"
+name = "lesson2"
 compatibility_date = "2025-01-20"
 
 # 静的サイト（Pages）用設定
 [assets]
 directory = "."
-include = ["*.html", "*.js", "*.css", "_headers", "_redirects", "assets/**/*"]
