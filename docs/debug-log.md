@@ -82,12 +82,58 @@ class DataManager {
 - **問題**: メソッド配置の不整合により初期化に失敗
 
 ### 次のアクション
-1. `app.js`のメソッド配置を修正
-2. 修正後の動作確認
+1. ~~`app.js`のメソッド配置を修正~~ ✓ 完了 
+2. ~~修正後の動作確認~~ ✓ 完了
 3. 正常動作確認後にマージを検討
+
+## 追加修正 - 3D描画反応なし問題
+
+### エラー発生日時
+2025-08-20 (画面真っ黒問題修正後)
+
+### 問題概要
+メソッド配置エラー修正後、3D描画は表示されるようになったが、クリック操作に反応しない問題が発生
+
+### 根本原因
+`backgroundClicked`イベントのハンドラーが`setupComponentCommunication()`メソッド内に設定されていない
+
+### 修正内容
+#### 1. backgroundClickedイベントハンドラー追加 (app.js:103-108)
+```javascript
+this.eventManager.on('backgroundClicked', () => {
+    console.log('背景クリック: オブジェクト選択を解除');
+    this.state.setSelectedObject(null, null);
+    this.uiManager.hideAllPanels();
+    this.updateUI();
+});
+```
+
+#### 2. templateClickedイベント処理追加 (app.js:1012-1015)
+```javascript
+case 'template':
+    console.log('テンプレート全体クリック:', userData);
+    this.emit('templateClicked', userData);
+    break;
+```
+
+#### 3. デバッグログ追加
+- すべてのクリックイベント処理にコンソールログを追加
+- 背景クリック検出ログを追加
+- イベント発火の追跡が可能に
+
+### 修正後の動作
+- **背景クリック**: オブジェクト選択解除・パネル非表示 ✓
+- **テンプレート板クリック**: 対応するパネル表示 ✓  
+- **個別板クリック**: 編集パネル表示 ✓
+- **コンソールログ**: すべてのクリック操作を追跡 ✓
+
+### テスト結果
+- 3D描画表示: ✓ 正常
+- クリック反応: ✓ 修正完了
+- UI操作: ✓ 正常動作確認
 
 ---
 
 *記録日: 2025-08-20*  
 *ブランチ: wip-black-screen-debug*  
-*コミット: wip: 動作確認中に画面真っ黒*
+*最新コミット: fix: 3D描画クリック反応問題を修正*

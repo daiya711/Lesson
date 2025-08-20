@@ -83,20 +83,30 @@ class ShelfDesigner {
     setupComponentCommunication() {
         // EventManagerからの通知を各コンポーネントに配信
         this.eventManager.on('templateClicked', (templateData) => {
+            console.log('テンプレートクリック:', templateData);
             this.state.setSelectedObject(templateData, 'template');
             this.uiManager.showTemplateEditPanel();
             this.updateUI();
         });
         
         this.eventManager.on('templateBoardClicked', (boardData) => {
+            console.log('テンプレート板クリック処理:', boardData);
             this.state.setSelectedObject(boardData, 'templateBoard');
             this.uiManager.showTemplateBoardPanel();
             this.updateUI();
         });
         
         this.eventManager.on('independentBoardClicked', (boardData) => {
+            console.log('個別板クリック処理:', boardData);
             this.state.setSelectedObject(boardData, 'independent');
             this.uiManager.showIndividualBoardPanel();
+            this.updateUI();
+        });
+        
+        this.eventManager.on('backgroundClicked', () => {
+            console.log('背景クリック: オブジェクト選択を解除');
+            this.state.setSelectedObject(null, null);
+            this.uiManager.hideAllPanels();
             this.updateUI();
         });
         
@@ -994,13 +1004,22 @@ class EventManager {
             
             switch (userData.type) {
                 case 'templateBoard':
+                    console.log('テンプレート板クリック:', userData);
                     this.emit('templateBoardClicked', userData);
                     break;
                 case 'independentBoard':
+                    console.log('個別板クリック:', userData);
                     this.emit('independentBoardClicked', userData);
                     break;
+                case 'template':
+                    console.log('テンプレート全体クリック:', userData);
+                    this.emit('templateClicked', userData);
+                    break;
+                default:
+                    console.log('不明なオブジェクトクリック:', userData);
             }
         } else {
+            console.log('背景クリック検出');
             this.emit('backgroundClicked');
         }
     }
