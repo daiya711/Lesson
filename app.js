@@ -1422,6 +1422,95 @@ class UIManager {
         return names[boardType] || boardType;
     }
     
+    createStructureCheckButton() {
+        // データ管理セクションの後に構造チェックセクションを動的作成
+        const dataSection = document.querySelector('.control-group:has(#saveDesign)');
+        if (dataSection && !document.getElementById('structureCheck')) {
+            const structureSection = document.createElement('div');
+            structureSection.className = 'control-group';
+            structureSection.innerHTML = `
+                <h3>構造・安全性</h3>
+                <div style="margin-bottom: 10px;">
+                    <button id="structureCheck" class="add-btn" style="width: 100%;">構造チェック実行</button>
+                </div>
+                <div id="structureResults" style="font-size: 10px; color: #666; padding: 8px; background: #f8f9fa; border-radius: 4px; display: none;">
+                    <!-- 構造チェック結果 -->
+                </div>
+            `;
+            
+            dataSection.parentNode.insertBefore(structureSection, dataSection.nextSibling);
+            
+            // イベントリスナー設定
+            const structureBtn = document.getElementById('structureCheck');
+            if (structureBtn) {
+                structureBtn.addEventListener('click', () => {
+                    this.emit('structureCheck');
+                });
+            }
+        }
+    }
+    
+    displayStructureResults(results) {
+        const resultsDiv = document.getElementById('structureResults');
+        if (!resultsDiv) return;
+        
+        resultsDiv.style.display = 'block';
+        
+        let html = '<div style="margin-bottom: 8px;"><strong>構造チェック結果</strong></div>';
+        
+        // 統計情報
+        html += `
+            <div style="margin-bottom: 8px; padding: 4px; background: #e9ecef; border-radius: 3px;">
+                <div>総重量: ${results.stats.totalWeight}kg</div>
+                <div>最大スパン: ${results.stats.maxSpan}cm</div>
+                <div>概算コスト: ¥${results.stats.estimatedCost.toLocaleString()}</div>
+            </div>
+        `;
+        
+        // 総合評価
+        const statusColors = {
+            safe: '#28a745',
+            warning: '#ffc107', 
+            danger: '#dc3545'
+        };
+        
+        const statusTexts = {
+            safe: '✓ 安全',
+            warning: '⚠ 注意',
+            danger: '✗ 危険'
+        };
+        
+        html += `
+            <div style="margin-bottom: 8px; padding: 4px; color: white; background: ${statusColors[results.overall]}; border-radius: 3px; text-align: center;">
+                ${statusTexts[results.overall]}
+            </div>
+        `;
+        
+        // 問題点
+        if (results.issues.length > 0) {
+            html += '<div style="margin-bottom: 8px;"><strong>問題点:</strong></div>';
+            results.issues.forEach(issue => {
+                const color = issue.severity === 'danger' ? '#dc3545' : '#ffc107';
+                html += `
+                    <div style="margin-bottom: 4px; padding: 3px; background: #fff; border-left: 3px solid ${color}; font-size: 9px;">
+                        <div style="font-weight: bold;">${issue.message}</div>
+                        <div style="color: #666;">${issue.description}</div>
+                    </div>
+                `;
+            });
+        }
+        
+        // 推奨事項
+        if (results.recommendations.length > 0) {
+            html += '<div style="margin-top: 8px; margin-bottom: 4px;"><strong>推奨事項:</strong></div>';
+            results.recommendations.forEach(rec => {
+                html += `<div style="margin-bottom: 2px; font-size: 9px; color: #666;">• ${rec}</div>`;
+            });
+        }
+        
+        resultsDiv.innerHTML = html;
+    }
+    
     on(event, callback) {
         if (!this.listeners.has(event)) {
             this.listeners.set(event, new Set());
@@ -1987,95 +2076,6 @@ class DataManager {
         });
         
         return usage;
-    }
-    
-    createStructureCheckButton() {
-        // データ管理セクションの後に構造チェックセクションを動的作成
-        const dataSection = document.querySelector('.control-group:has(#saveDesign)');
-        if (dataSection && !document.getElementById('structureCheck')) {
-            const structureSection = document.createElement('div');
-            structureSection.className = 'control-group';
-            structureSection.innerHTML = `
-                <h3>構造・安全性</h3>
-                <div style="margin-bottom: 10px;">
-                    <button id="structureCheck" class="add-btn" style="width: 100%;">構造チェック実行</button>
-                </div>
-                <div id="structureResults" style="font-size: 10px; color: #666; padding: 8px; background: #f8f9fa; border-radius: 4px; display: none;">
-                    <!-- 構造チェック結果 -->
-                </div>
-            `;
-            
-            dataSection.parentNode.insertBefore(structureSection, dataSection.nextSibling);
-            
-            // イベントリスナー設定
-            const structureBtn = document.getElementById('structureCheck');
-            if (structureBtn) {
-                structureBtn.addEventListener('click', () => {
-                    this.emit('structureCheck');
-                });
-            }
-        }
-    }
-    
-    displayStructureResults(results) {
-        const resultsDiv = document.getElementById('structureResults');
-        if (!resultsDiv) return;
-        
-        resultsDiv.style.display = 'block';
-        
-        let html = '<div style="margin-bottom: 8px;"><strong>構造チェック結果</strong></div>';
-        
-        // 統計情報
-        html += `
-            <div style="margin-bottom: 8px; padding: 4px; background: #e9ecef; border-radius: 3px;">
-                <div>総重量: ${results.stats.totalWeight}kg</div>
-                <div>最大スパン: ${results.stats.maxSpan}cm</div>
-                <div>概算コスト: ¥${results.stats.estimatedCost.toLocaleString()}</div>
-            </div>
-        `;
-        
-        // 総合評価
-        const statusColors = {
-            safe: '#28a745',
-            warning: '#ffc107', 
-            danger: '#dc3545'
-        };
-        
-        const statusTexts = {
-            safe: '✓ 安全',
-            warning: '⚠ 注意',
-            danger: '✗ 危険'
-        };
-        
-        html += `
-            <div style="margin-bottom: 8px; padding: 4px; color: white; background: ${statusColors[results.overall]}; border-radius: 3px; text-align: center;">
-                ${statusTexts[results.overall]}
-            </div>
-        `;
-        
-        // 問題点
-        if (results.issues.length > 0) {
-            html += '<div style="margin-bottom: 8px;"><strong>問題点:</strong></div>';
-            results.issues.forEach(issue => {
-                const color = issue.severity === 'danger' ? '#dc3545' : '#ffc107';
-                html += `
-                    <div style="margin-bottom: 4px; padding: 3px; background: #fff; border-left: 3px solid ${color}; font-size: 9px;">
-                        <div style="font-weight: bold;">${issue.message}</div>
-                        <div style="color: #666;">${issue.description}</div>
-                    </div>
-                `;
-            });
-        }
-        
-        // 推奨事項
-        if (results.recommendations.length > 0) {
-            html += '<div style="margin-top: 8px; margin-bottom: 4px;"><strong>推奨事項:</strong></div>';
-            results.recommendations.forEach(rec => {
-                html += `<div style="margin-bottom: 2px; font-size: 9px; color: #666;">• ${rec}</div>`;
-            });
-        }
-        
-        resultsDiv.innerHTML = html;
     }
 }
 
