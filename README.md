@@ -10,6 +10,8 @@
 - 📏 推奨寸法・構造チェック
 - 🎨 材料・仕上げ選択
 - 📋 設計データ・図面出力
+- ☁️ クラウドデータベース保存・共有
+- 🗄️ 設計履歴管理・復元機能
 
 ## 操作方法
 - **シングルクリック**: 箱全体選択・上下左右移動・サイズ調整
@@ -27,11 +29,31 @@
 - **フロントエンド**: Three.js, HTML5, CSS3, JavaScript
 - **3Dエンジン**: Three.js WebGL
 - **UI**: レスポンシブデザイン
+- **バックエンド**: Hono Framework
+- **データベース**: Cloudflare D1 (SQLite)
+- **ホスティング**: Cloudflare Pages + Functions
 
 ## 開発環境
+
+### 環境構築
 ```bash
-# 開発サーバー起動（例：Live Server等）
-# ブラウザでindex.htmlを開く
+# 依存関係インストール
+npm install
+
+# D1 データベース作成
+npm run d1:create
+
+# データベースマイグレーション実行
+npm run d1:migrate
+
+# 開発サーバー起動
+npm run dev
+```
+
+### 本番デプロイ
+```bash
+# Cloudflare Pages にデプロイ
+npm run deploy
 ```
 
 ## ブラウザ対応

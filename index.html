@@ -344,9 +344,21 @@
             <div class="control-group">
                 <h3>データ管理</h3>
                 
-                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                    <button id="saveDesign" class="add-btn" style="flex: 1;">保存</button>
-                    <button id="loadDesign" class="thickness-btn" style="flex: 1;">読込</button>
+                <div style="margin-bottom: 15px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #666;">クラウド保存</h4>
+                    <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                        <button id="saveToDatabase" class="add-btn" style="flex: 1;">クラウド保存</button>
+                        <button id="loadFromDatabase" class="thickness-btn" style="flex: 1;">クラウド読込</button>
+                    </div>
+                    <button id="showSavedDesigns" class="thickness-btn" style="width: 100%; font-size: 11px;">保存済み一覧</button>
+                </div>
+                
+                <div style="margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #666;">ローカルファイル</h4>
+                    <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                        <button id="saveDesign" class="add-btn" style="flex: 1;">ファイル保存</button>
+                        <button id="loadDesign" class="thickness-btn" style="flex: 1;">ファイル読込</button>
+                    </div>
                 </div>
                 
                 <div style="display: flex; gap: 5px;">
@@ -387,6 +399,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
     <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="src/api/client.js"></script>
     <script src="app.js"></script>
+    <script src="src/api/dataManager-extension.js"></script>
+    <script src="src/api/ui-extension.js"></script>
 </body>
 </html>
