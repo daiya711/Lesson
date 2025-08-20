@@ -1,4 +1,0 @@
-# Cloudflare Pages リダイレクト設定
-# SPA対応 - 存在しないパスをindex.htmlにリダイレクト
-/app/*    /index.html   200
-/design/*    /index.html   200
