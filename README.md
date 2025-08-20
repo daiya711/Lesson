@@ -17,10 +17,11 @@
 - **ドラッグ**: 直感的な3D操作
 - **Delete**: 選択板を削除
 
-## ドキュメント
-- [要求仕様書](docs/requirements.md) - プラットフォームの詳細要求仕様
-- [技術仕様書](docs/specification.md) - 機能要件・API・テストケース
-- [設計仕様書](docs/design.md) - システムアーキテクチャ・実装設計
+## ドキュメント体系
+- [要求仕様書](docs/requirements.md) - ビジネス要求・機能要求・開発優先度
+- [技術仕様書](docs/specification.md) - 機能要件FR001-FR009・API設計・受け入れテスト
+- [設計仕様書](docs/design.md) - 3層アーキテクチャ・6コンポーネント設計・実装詳細
+- [実装計画書](docs/implementation-plan.md) - 12週間フェーズ別開発ロードマップ・リソース配分・リスク管理
 
 ## 技術構成
 - **フロントエンド**: Three.js, HTML5, CSS3, JavaScript
