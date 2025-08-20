@@ -1,11 +1,9 @@
-name = "lesson2"
+name = "lesson3"
 compatibility_date = "2025-01-20"
 
 # 静的サイト（Pages）用設定
 [assets]
-directory = "."
-include = ["*.html", "*.js", "*.css", "_headers", "assets/**/*", "src/api/**/*"]
-exclude = ["node_modules/**/*", ".git/**/*", "src/db/**/*", "migrations/**/*", "docs/**/*", "*.md", "package*.json", "tsconfig.json"]
+directory = "public"
 
 # D1 Database binding
 [[d1_databases]]
@@ -15,7 +13,7 @@ database_id = ""  # wrangler d1 create 実行後に設定
 
 # Environment Variables
 [vars]
-API_BASE_URL = "https://lesson2.pages.dev"
+API_BASE_URL = "https://lesson3.pages.dev"
 NODE_VERSION = "18"
 
 # Build settings
