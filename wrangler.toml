@@ -1,4 +1,4 @@
-name = "lesson3"
+name = "lesson2"
 compatibility_date = "2025-01-20"
 
 # 静的サイト（Pages）用設定
@@ -12,6 +12,6 @@ database_id = "40bfceaa-1a06-4d58-b1a2-957f2da6d852"
 
 # Environment Variables
 [vars]
-API_BASE_URL = "https://lesson3.pages.dev"
+API_BASE_URL = "https://lesson2.pages.dev"
 NODE_VERSION = "18"
 
