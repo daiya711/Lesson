@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>収納棚設計・デザインプラットフォーム</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .controls {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .control-group {
+            margin-bottom: 25px;
+        }
+
+        .control-group h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #007acc;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .viewport {
+            flex: 1;
+            position: relative;
+        }
+
+        #canvas {
+            display: block;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 100%);
+        }
+
+        .dimensions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .module-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .module-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .module-toggle input[type="checkbox"] {
+            margin: 0;
+        }
+
+        .thickness-btn {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .thickness-btn:hover {
+            background: #005a9e;
+        }
+
+        .add-btn {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .add-btn:hover {
+            background: #218838;
+        }
+
+        .shelf-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .shelf-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .height-input {
+            width: 60px;
+            padding: 2px 4px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 11px;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .remove-btn:hover {
+            background: #c82333;
+        }
+
+        .support-item, .shelf-item {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 6px;
+            margin-bottom: 5px;
+            font-size: 11px;
+        }
+
+        .support-controls, .shelf-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .position-input {
+            width: 40px;
+            padding: 2px 4px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <div class="title">収納棚設計プラットフォーム</div>
+            
+            <!-- 箱テンプレート操作 -->
+            <div class="control-group">
+                <h3>箱テンプレート編集</h3>
+                
+                <div id="templateSizeControls">
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>幅 (cm)</span>
+                            <span id="widthValue">80</span>
+                        </div>
+                        <input type="range" id="widthSlider" class="slider" min="30" max="200" value="80">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>高さ (cm)</span>
+                            <span id="heightValue">180</span>
+                        </div>
+                        <input type="range" id="heightSlider" class="slider" min="50" max="250" value="180">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">
+                            <span>奥行き (cm)</span>
+                            <span id="depthValue">35</span>
+                        </div>
+                        <input type="range" id="depthSlider" class="slider" min="20" max="80" value="35">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">構成板</h4>
+                    <div id="boardToggles">
+                        <label class="module-toggle"><input type="checkbox" id="topEnabled" checked> 天板</label>
+                        <label class="module-toggle"><input type="checkbox" id="bottomEnabled" checked> 底板</label>
+                        <label class="module-toggle"><input type="checkbox" id="leftEnabled" checked> 左側板</label>
+                        <label class="module-toggle"><input type="checkbox" id="rightEnabled" checked> 右側板</label>
+                        <label class="module-toggle"><input type="checkbox" id="backEnabled" checked> 背板</label>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="convertToIndividual" class="add-btn">個別板モードに切替</button>
+                    <button id="resetTemplate" class="add-btn" style="background: #6c757d;">初期状態に戻す</button>
+                </div>
+                
+                <div style="margin-top: 15px; font-size: 11px; color: #666;">
+                    <div><strong>操作方法:</strong></div>
+                    <div>• <strong>シングルクリック</strong>: テンプレート全体選択</div>
+                    <div>• <strong>ダブルクリック</strong>: 個別板選択・編集</div>
+                    <div>• Delete: 選択板を削除</div>
+                </div>
+            </div>
+
+            <!-- 個別板追加 -->
+            <div class="control-group">
+                <h3>個別板追加</h3>
+                
+                <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                    <button id="addHorizontalBoard" class="add-btn" style="flex: 1;">水平板追加</button>
+                    <button id="addVerticalBoard" class="add-btn" style="flex: 1;">垂直板追加</button>
+                </div>
+                
+                <div id="independentBoardsList">
+                    <!-- 動的に追加される個別板 -->
+                </div>
+            </div>
+
+            <!-- テンプレート板編集パネル -->
+            <div class="control-group" id="templateBoardPanel" style="display: none;">
+                <h3>テンプレート板編集</h3>
+                <div id="templateBoardInfo"></div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">サイズ調整</h4>
+                    <div id="templateBoardSizeControls"></div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="disableTemplateBoard" class="remove-btn" style="width: 100%;">この板を無効化</button>
+                </div>
+            </div>
+            
+            <!-- 個別板編集パネル -->
+            <div class="control-group" id="individualBoardPanel" style="display: none;">
+                <h3>個別板編集</h3>
+                <div id="individualBoardInfo"></div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">寸法</h4>
+                    <div id="individualBoardSizeControls"></div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">位置</h4>
+                    <div id="individualBoardPositionControls"></div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 12px;">向き</h4>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="setHorizontal" class="thickness-btn" style="flex: 1;">水平</button>
+                        <button id="setVertical" class="thickness-btn" style="flex: 1;">垂直</button>
+                    </div>
+                    <div style="margin-top: 5px;">
+                        <label style="font-size: 11px;">回転 (度): </label>
+                        <input type="number" id="boardRotation" value="0" min="0" max="360" step="90" style="width: 60px;">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="deleteIndividualBoard" class="remove-btn" style="width: 100%;">個別板を削除</button>
+                </div>
+            </div>
+
+            <!-- データ管理 -->
+            <div id="dataSection" class="control-group">
+                <h3>データ管理</h3>
+                
+                <div style="margin-bottom: 15px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #666;">クラウド保存</h4>
+                    <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                        <button id="saveToDatabase" class="add-btn" style="flex: 1;">クラウド保存</button>
+                        <button id="loadFromDatabase" class="thickness-btn" style="flex: 1;">クラウド読込</button>
+                    </div>
+                    <button id="showSavedDesigns" class="thickness-btn" style="width: 100%; font-size: 11px;">保存済み一覧</button>
+                </div>
+                
+                <div style="margin-bottom: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 12px; color: #666;">ローカルファイル</h4>
+                    <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                        <button id="saveDesign" class="add-btn" style="flex: 1;">ファイル保存</button>
+                        <button id="loadDesign" class="thickness-btn" style="flex: 1;">ファイル読込</button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 5px;">
+                    <button id="exportBOM" class="thickness-btn" style="flex: 1;">部材リスト</button>
+                    <button id="exportImage" class="thickness-btn" style="flex: 1;">画像出力</button>
+                </div>
+                
+                <input type="file" id="loadFile" accept=".json" style="display: none;">
+            </div>
+
+
+            <!-- 人物表示 -->
+            <div class="control-group">
+                <h3>表示設定</h3>
+                
+                <div class="slider-container">
+                    <div class="slider-label">
+                        <span>人物モデル（170cm）</span>
+                    </div>
+                    <label style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+                        <input type="checkbox" id="toggleHuman" style="margin: 0;">
+                        <span>表示する</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="viewport">
+            <canvas id="canvas"></canvas>
+            <div class="dimensions" id="dimensions">
+                <div><strong>設計情報</strong></div>
+                <div>テンプレート: <span id="templateSize">80×180×35cm</span></div>
+                <div>個別板数: <span id="independentCount">0</span>枚</div>
+                <div>編集モード: <span id="editMode">テンプレート</span></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="https://unpkg.com/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="src/api/client.js"></script>
+    <script src="app.js"></script>
+    <script src="src/api/dataManager-extension.js"></script>
+    <script src="src/api/ui-extension.js"></script>
+</body>
+</html>
