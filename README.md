@@ -24,6 +24,8 @@
 - [技術仕様書](docs/specification.md) - 機能要件FR001-FR009・API設計・受け入れテスト
 - [設計仕様書](docs/design.md) - 3層アーキテクチャ・6コンポーネント設計・実装詳細
 - [実装計画書](docs/implementation-plan.md) - 12週間フェーズ別開発ロードマップ・リソース配分・リスク管理
+- [キャンバス表示問題修正レポート](docs/fix-canvas-display-issues.md) - UIManager構文エラー等の重要バグ修正詳細
+- [ブラウザアクセス手順書](docs/browser-access-guide.md) - 各種アクセス方法・動作確認・トラブルシューティング
 
 ## 技術構成
 - **フロントエンド**: Three.js, HTML5, CSS3, JavaScript
@@ -56,12 +58,37 @@ npm run dev
 npm run deploy
 ```
 
+### ローカル動作確認
+```bash
+# Python簡易サーバー（推奨）
+cd public
+python3 -m http.server 8000
+# http://localhost:8000 でアクセス
+
+# または Cloudflare Pages開発サーバー
+npx wrangler pages dev public --local
+# http://localhost:8788 でアクセス
+```
+
+詳細は[ブラウザアクセス手順書](docs/browser-access-guide.md)を参照
+
 ## ブラウザ対応
 - Chrome（推奨）
 - Firefox
 - Safari
 - Edge
 - WebGL対応端末
+
+## 🔄 最新修正状況（2025/01/21）
+**重要バグ修正完了** - キャンバス表示問題解決
+- ✅ UIManager構文エラー修正（アプリ起動ブロッカー解除）
+- ✅ EventManager背景クリック修正（選択解除機能復活）  
+- ✅ :has()セレクタ置換（ブラウザ互換性向上）
+- ✅ 単位統一修正（mm→cm、計算精度向上）
+- ✅ 画像エクスポート時カメラアスペクト修正
+
+**動作確認済み**: アプリ正常起動、3D表示、UI操作、全機能動作  
+詳細: [修正レポート](docs/fix-canvas-display-issues.md)
 
 ## デプロイメント
 
