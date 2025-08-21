@@ -25,6 +25,7 @@
 - [設計仕様書](docs/design.md) - 3層アーキテクチャ・6コンポーネント設計・実装詳細
 - [実装計画書](docs/implementation-plan.md) - 12週間フェーズ別開発ロードマップ・リソース配分・リスク管理
 - [キャンバス表示問題修正レポート](docs/fix-canvas-display-issues.md) - UIManager構文エラー等の重要バグ修正詳細
+- [機能改善レポート](docs/feature-improvements-2025-01-21.md) - 個別板モード削除・垂直板向き修正・構成板復活機能修正
 - [ブラウザアクセス手順書](docs/browser-access-guide.md) - 各種アクセス方法・動作確認・トラブルシューティング
 
 ## 技術構成
@@ -87,8 +88,13 @@ npx wrangler pages dev public --local
 - ✅ 単位統一修正（mm→cm、計算精度向上）
 - ✅ 画像エクスポート時カメラアスペクト修正
 
+**機能改善完了** - 使いやすさ・安定性向上
+- ✅ 個別板モード切替機能削除（UIシンプル化）
+- ✅ 垂直板向き修正（横向き→縦向き表示）
+- ✅ 構成板復活機能修正（有効/無効切替安定化）
+
 **動作確認済み**: アプリ正常起動、3D表示、UI操作、全機能動作  
-詳細: [修正レポート](docs/fix-canvas-display-issues.md)
+詳細: [バグ修正レポート](docs/fix-canvas-display-issues.md) | [機能改善レポート](docs/feature-improvements-2025-01-21.md)
 
 ## デプロイメント
 
