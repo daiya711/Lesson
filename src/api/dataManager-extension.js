@@ -4,7 +4,13 @@
  */
 
 // DataManagerクラスの拡張メソッドを追加
-if (typeof DataManager !== 'undefined') {
+console.log('dataManager-extension.js 読み込み開始');
+console.log('DataManager availability check:', typeof DataManager !== 'undefined', typeof DataManager);
+
+// DataManagerクラス定義を待つ関数
+function addDataManagerExtensions() {
+    if (typeof DataManager !== 'undefined') {
+        console.log('DataManager クラス確認完了。拡張メソッドを追加します。');
     
     /**
      * データベースに設計を保存
@@ -29,7 +35,18 @@ if (typeof DataManager !== 'undefined') {
             }
         } catch (error) {
             console.error('データベース保存エラー:', error);
-            this.showSaveMessage(`保存エラー: ${error.message}`, 'error');
+            console.log('API呼び出し詳細:', {
+                url: window.shelfDesignerAPI?.baseURL + window.shelfDesignerAPI?.apiPath + '/designs',
+                error: error.message,
+                apiClient: window.shelfDesignerAPI
+            });
+            
+            let errorMessage = `保存エラー: ${error.message}`;
+            if (error.message.includes('fetch')) {
+                errorMessage += `\n\nネットワークエラーの可能性があります。URLを確認してください。`;
+            }
+            
+            this.showSaveMessage(errorMessage, 'error');
             throw error;
         }
     };
@@ -147,5 +164,30 @@ if (typeof DataManager !== 'undefined') {
         }, 3000);
     };
 
-    console.log('DataManager拡張機能が追加されました');
+        console.log('DataManager拡張機能が追加されました');
+        return true;
+    } else {
+        console.warn('DataManager クラスが見つかりません。再試行します...');
+        return false;
+    }
+}
+
+// 即座に試行
+if (!addDataManagerExtensions()) {
+    // DataManagerクラス定義を待つ
+    let retryCount = 0;
+    const maxRetries = 20;
+    
+    const checkInterval = setInterval(() => {
+        retryCount++;
+        console.log(`DataManager 存在確認 試行 ${retryCount}/${maxRetries}`);
+        
+        if (addDataManagerExtensions()) {
+            clearInterval(checkInterval);
+            console.log('DataManager拡張機能の遅延追加が完了しました');
+        } else if (retryCount >= maxRetries) {
+            clearInterval(checkInterval);
+            console.error('DataManager拡張機能の追加に失敗しました（タイムアウト）');
+        }
+    }, 100);
 }

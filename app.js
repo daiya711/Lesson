@@ -577,24 +577,8 @@ class TemplateManager {
         
         // 各板を作成
         Object.values(this.boxTemplate.boards).forEach(board => {
-            // 既存meshの確実な削除（有効・無効問わず）
-            if (board.mesh) {
-                this.templateGroup.remove(board.mesh);
-                if (board.mesh.geometry) {
-                    board.mesh.geometry.dispose();
-                }
-                if (board.mesh.material) {
-                    if (Array.isArray(board.mesh.material)) {
-                        board.mesh.material.forEach(mat => mat.dispose());
-                    } else {
-                        board.mesh.material.dispose();
-                    }
-                }
-                board.mesh = null;
-            }
-            
-            // 有効な板のみ新しいmeshを生成・追加
-            if (board.enabled) {
+            // meshが存在しない場合のみ作成
+            if (!board.mesh) {
                 board.mesh = this.createBoardMesh(board.type, width, height, depth, thickness);
                 board.mesh.userData = {
                     type: 'templateBoard',
@@ -603,6 +587,9 @@ class TemplateManager {
                 };
                 this.templateGroup.add(board.mesh);
             }
+            
+            // visibility設定
+            board.mesh.visible = board.enabled;
         });
         
         // テンプレート位置設定
@@ -662,11 +649,16 @@ class TemplateManager {
         // FR001-3: テンプレート個別板の有効/無効切替機能
         if (!this.boxTemplate || !this.boxTemplate.boards[boardType]) return;
         
-        this.boxTemplate.boards[boardType].enabled = enabled;
-        this.boxTemplate.updatedAt = new Date();
-        this.buildTemplate();
+        const board = this.boxTemplate.boards[boardType];
+        board.enabled = enabled;
         
-        console.log(`${boardType}板を${enabled ? '有効' : '無効'}化`);
+        // meshが存在する場合はvisibility切り替えのみ
+        if (board.mesh) {
+            board.mesh.visible = enabled;
+        }
+        
+        this.boxTemplate.updatedAt = new Date();
+        console.log(`${boardType}板を${enabled ? '表示' : '非表示'}に切り替え`);
     }
     
     resetToDefault() {
@@ -733,9 +725,7 @@ class BoardManager {
                 thickness: 1.8
             },
             orientation: orientation,
-            rotation: orientation === 'vertical' 
-                ? { x: 0, y: 90, z: 0 }  // 垂直板はY軸90度回転で立てる
-                : { x: 0, y: 0, z: 0 },
+            rotation: { x: 0, y: 0, z: 0 },
             material: {
                 type: 'pine',
                 thickness: 1.8,
@@ -775,7 +765,16 @@ class BoardManager {
         }
         
         const { length, width, thickness } = boardData.dimensions;
-        const geometry = new THREE.BoxGeometry(length, thickness, width);
+        
+        // 垂直板の場合、lengthをY軸方向（高さ）として設定
+        let geometry;
+        if (boardData.orientation === 'vertical') {
+            // 垂直板: length(長さ) → Y軸(高さ)、thickness → X軸、width → Z軸
+            geometry = new THREE.BoxGeometry(thickness, length, width);
+        } else {
+            // 水平板: デフォルト
+            geometry = new THREE.BoxGeometry(length, thickness, width);
+        }
         const mesh = new THREE.Mesh(geometry, this.defaultMaterial);
         
         // 位置・回転設定

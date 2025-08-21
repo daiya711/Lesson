@@ -6,6 +6,48 @@
 // DOM読み込み完了後に実行
 document.addEventListener('DOMContentLoaded', function() {
     console.log('データベースUI拡張機能初期化開始');
+    
+    // DataManager初期化完了イベントを待機
+    window.addEventListener('dataManagerReady', function(event) {
+        console.log('dataManagerReady イベント受信:', event.detail);
+        initializeDatabaseUI();
+    });
+    
+    // フォールバック: 既に初期化済みの場合
+    if (window.shelfDesigner && window.shelfDesigner.dataManager) {
+        console.log('DataManager既に初期化済み。即座に初期化します。');
+        initializeDatabaseUI();
+    } else {
+        // タイムアウト設定
+        setTimeout(() => {
+            if (!window.dataManagerUIInitialized) {
+                console.warn('DataManager初期化タイムアウト。フォールバック処理を実行します。');
+                initializeDatabaseUIFallback();
+            }
+        }, 5000);
+    }
+});
+
+function initializeDatabaseUI() {
+    console.log('initializeDatabaseUI 開始');
+    window.dataManagerUIInitialized = true;
+    
+    // DataManager拡張メソッド存在確認
+    const dataManager = window.shelfDesigner?.dataManager;
+    if (!dataManager) {
+        console.error('window.shelfDesigner.dataManager が見つかりません');
+        initializeDatabaseUIFallback();
+        return;
+    }
+    
+    if (typeof dataManager.saveDesignToDatabase !== 'function') {
+        console.error('dataManager.saveDesignToDatabase メソッドが見つかりません');
+        console.log('利用可能なメソッド:', Object.getOwnPropertyNames(dataManager));
+        initializeDatabaseUIFallback();
+        return;
+    }
+    
+    console.log('DataManager拡張メソッド確認完了');
 
     // クラウド保存ボタン
     const saveToDbBtn = document.getElementById('saveToDatabase');
@@ -26,7 +68,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('クラウド保存エラー:', error);
-                alert(`保存に失敗しました: ${error.message}`);
+                console.log('エラー詳細:', {
+                    message: error.message,
+                    stack: error.stack,
+                    dataManager: window.shelfDesigner?.dataManager,
+                    apiClient: window.shelfDesignerAPI,
+                    currentURL: window.location.href
+                });
+                
+                // より詳細なエラーメッセージを表示
+                let errorMessage = `保存に失敗しました: ${error.message}`;
+                
+                if (error.message === 'DataManager not available') {
+                    errorMessage += `\n\n詳細情報:
+                    - ShelfDesigner: ${window.shelfDesigner ? '✓' : '✗'}
+                    - DataManager: ${window.shelfDesigner?.dataManager ? '✓' : '✗'}
+                    - saveDesignToDatabase: ${window.shelfDesigner?.dataManager?.saveDesignToDatabase ? '✓' : '✗'}
+                    
+                    デバッグのため、ブラウザのコンソールをご確認ください。`;
+                }
+                
+                alert(errorMessage);
             }
         });
     } else {
@@ -196,5 +258,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    console.log('データベースUI拡張機能初期化完了');
-});
+}
+
+function initializeDatabaseUIFallback() {
+    console.warn('DataManagerなしでUI拡張機能を初期化します');
+    
+    // クラウド保存ボタン
+    const saveToDbBtn = document.getElementById('saveToDatabase');
+    if (saveToDbBtn) {
+        saveToDbBtn.addEventListener('click', () => {
+            alert('データベース機能は現在利用できません。\nローカルファイル保存をご利用ください。');
+        });
+    }
+    
+    // クラウド読込ボタン  
+    const loadFromDbBtn = document.getElementById('loadFromDatabase');
+    if (loadFromDbBtn) {
+        loadFromDbBtn.addEventListener('click', () => {
+            alert('データベース機能は現在利用できません。\nローカルファイル読込をご利用ください。');
+        });
+    }
+    
+    // 保存済み一覧ボタン
+    const showSavedBtn = document.getElementById('showSavedDesigns');
+    if (showSavedBtn) {
+        showSavedBtn.addEventListener('click', () => {
+            alert('データベース機能は現在利用できません。');
+        });
+    }
+    
+    console.log('フォールバックUI拡張機能初期化完了');
+}
