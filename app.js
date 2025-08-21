@@ -2126,7 +2126,13 @@ class DataManager {
             canvas.width = 1920;
             canvas.height = 1080;
             shelfDesigner.viewportManager.renderer.setSize(1920, 1080);
-            shelfDesigner.viewportManager.render();
+        
+            // ★ カメラのアスペクト比を更新
+            shelfDesigner.viewportManager.camera.aspect = 1920 / 1080;
+            shelfDesigner.viewportManager.camera.updateProjectionMatrix();
+
+
+             shelfDesigner.viewportManager.render();
             
             // 画像として出力
             canvas.toBlob((blob) => {

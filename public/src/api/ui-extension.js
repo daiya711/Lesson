@@ -7,24 +7,47 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('データベースUI拡張機能初期化開始');
     
-    // ShelfDesigner初期化完了を待つ
-    function waitForShelfDesigner(retries = 50) {
-        if (window.shelfDesigner && window.shelfDesigner.dataManager) {
-            console.log('ShelfDesigner初期化確認完了:', window.shelfDesigner);
-            initializeDatabaseUI();
-        } else if (retries > 0) {
-            console.log('ShelfDesigner初期化待機中...', retries);
-            setTimeout(() => waitForShelfDesigner(retries - 1), 100);
-        } else {
-            console.error('ShelfDesigner初期化タイムアウト');
-            initializeDatabaseUIFallback();
-        }
-    }
+    // DataManager初期化完了イベントを待機
+    window.addEventListener('dataManagerReady', function(event) {
+        console.log('dataManagerReady イベント受信:', event.detail);
+        initializeDatabaseUI();
+    });
     
-    waitForShelfDesigner();
+    // フォールバック: 既に初期化済みの場合
+    if (window.shelfDesigner && window.shelfDesigner.dataManager) {
+        console.log('DataManager既に初期化済み。即座に初期化します。');
+        initializeDatabaseUI();
+    } else {
+        // タイムアウト設定
+        setTimeout(() => {
+            if (!window.dataManagerUIInitialized) {
+                console.warn('DataManager初期化タイムアウト。フォールバック処理を実行します。');
+                initializeDatabaseUIFallback();
+            }
+        }, 5000);
+    }
 });
 
 function initializeDatabaseUI() {
+    console.log('initializeDatabaseUI 開始');
+    window.dataManagerUIInitialized = true;
+    
+    // DataManager拡張メソッド存在確認
+    const dataManager = window.shelfDesigner?.dataManager;
+    if (!dataManager) {
+        console.error('window.shelfDesigner.dataManager が見つかりません');
+        initializeDatabaseUIFallback();
+        return;
+    }
+    
+    if (typeof dataManager.saveDesignToDatabase !== 'function') {
+        console.error('dataManager.saveDesignToDatabase メソッドが見つかりません');
+        console.log('利用可能なメソッド:', Object.getOwnPropertyNames(dataManager));
+        initializeDatabaseUIFallback();
+        return;
+    }
+    
+    console.log('DataManager拡張メソッド確認完了');
 
     // クラウド保存ボタン
     const saveToDbBtn = document.getElementById('saveToDatabase');

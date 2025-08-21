@@ -40,6 +40,12 @@ class ShelfDesigner {
             
             // DataManager初期化（データ管理）
             this.dataManager = new DataManager();
+            console.log('DataManager初期化完了:', this.dataManager);
+            
+            // DataManager初期化完了イベントを発火
+            window.dispatchEvent(new CustomEvent('dataManagerReady', { 
+                detail: { dataManager: this.dataManager } 
+            }));
             
             // StructureChecker初期化（構造安全性チェック）
             this.structureChecker = new StructureChecker();
