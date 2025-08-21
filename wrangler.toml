@@ -2,7 +2,7 @@ name = "lesson2"
 compatibility_date = "2025-01-20"
 
 # 静的サイト（Pages）用設定
-pages_build_output_dir = "public"
+pages_build_output_dir = "."
 
 # Pages Functions設定
 compatibility_flags = ["nodejs_compat"]
