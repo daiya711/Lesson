@@ -601,30 +601,9 @@ class TemplateManager {
     }
     
     createBoardMesh(boardType, width, height, depth, thickness) {
-        let geometry, position;
-        
-        switch (boardType) {
-            case 'top':
-                geometry = new THREE.BoxGeometry(width, thickness, depth);
-                position = [0, height - thickness/2, 0];
-                break;
-            case 'bottom':
-                geometry = new THREE.BoxGeometry(width, thickness, depth);
-                position = [0, thickness/2, 0];
-                break;
-            case 'left':
-                geometry = new THREE.BoxGeometry(thickness, height, depth);
-                position = [-width/2 + thickness/2, height/2, 0];
-                break;
-            case 'right':
-                geometry = new THREE.BoxGeometry(thickness, height, depth);
-                position = [width/2 - thickness/2, height/2, 0];
-                break;
-            case 'back':
-                geometry = new THREE.BoxGeometry(width, height, thickness);
-                position = [0, height/2, -depth/2 + thickness/2];
-                break;
-        }
+        // 新しいヘルパーメソッドを使用
+        const geometry = this.createBoardGeometry(boardType, width, height, depth, thickness);
+        const position = this.calculateBoardPosition(boardType, width, height, depth, thickness);
         
         const mesh = new THREE.Mesh(geometry, this.defaultMaterial);
         mesh.position.set(...position);
@@ -640,9 +619,70 @@ class TemplateManager {
         
         this.boxTemplate.size = { ...this.boxTemplate.size, ...newSize };
         this.boxTemplate.updatedAt = new Date();
-        this.buildTemplate();
+        
+        // buildTemplate()を呼ばず、既存meshのgeometry更新のみ実行
+        this.updateExistingMeshes();
         
         console.log('テンプレートサイズ更新:', this.boxTemplate.size);
+    }
+    
+    updateExistingMeshes() {
+        // 既存meshのgeometryをサイズ変更に合わせて更新
+        if (!this.boxTemplate || !this.boxTemplate.isActive) return;
+        
+        const { width, height, depth } = this.boxTemplate.size;
+        const thickness = 1.8; // 18mm → 1.8cm
+        
+        Object.values(this.boxTemplate.boards).forEach(board => {
+            if (board.mesh) {
+                // 既存geometryを削除
+                board.mesh.geometry.dispose();
+                
+                // 新しいサイズでgeometry再作成
+                const newGeometry = this.createBoardGeometry(board.type, width, height, depth, thickness);
+                board.mesh.geometry = newGeometry;
+                
+                // 位置も新しいサイズに合わせて更新
+                const newPosition = this.calculateBoardPosition(board.type, width, height, depth, thickness);
+                board.mesh.position.set(...newPosition);
+            }
+        });
+    }
+    
+    createBoardGeometry(boardType, width, height, depth, thickness) {
+        // createBoardMeshから geometry作成部分を分離
+        switch (boardType) {
+            case 'top':
+                return new THREE.BoxGeometry(width, thickness, depth);
+            case 'bottom':
+                return new THREE.BoxGeometry(width, thickness, depth);
+            case 'left':
+                return new THREE.BoxGeometry(thickness, height, depth);
+            case 'right':
+                return new THREE.BoxGeometry(thickness, height, depth);
+            case 'back':
+                return new THREE.BoxGeometry(width, height, thickness);
+            default:
+                return new THREE.BoxGeometry(width, thickness, depth);
+        }
+    }
+    
+    calculateBoardPosition(boardType, width, height, depth, thickness) {
+        // createBoardMeshから position計算部分を分離
+        switch (boardType) {
+            case 'top':
+                return [0, height - thickness/2, 0];
+            case 'bottom':
+                return [0, thickness/2, 0];
+            case 'left':
+                return [-width/2 + thickness/2, height/2, 0];
+            case 'right':
+                return [width/2 - thickness/2, height/2, 0];
+            case 'back':
+                return [0, height/2, -depth/2 + thickness/2];
+            default:
+                return [0, 0, 0];
+        }
     }
     
     toggleBoard(boardType, enabled) {
