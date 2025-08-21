@@ -68,7 +68,27 @@ function initializeDatabaseUI() {
                 }
             } catch (error) {
                 console.error('クラウド保存エラー:', error);
-                alert(`保存に失敗しました: ${error.message}`);
+                console.log('エラー詳細:', {
+                    message: error.message,
+                    stack: error.stack,
+                    dataManager: window.shelfDesigner?.dataManager,
+                    apiClient: window.shelfDesignerAPI,
+                    currentURL: window.location.href
+                });
+                
+                // より詳細なエラーメッセージを表示
+                let errorMessage = `保存に失敗しました: ${error.message}`;
+                
+                if (error.message === 'DataManager not available') {
+                    errorMessage += `\n\n詳細情報:
+                    - ShelfDesigner: ${window.shelfDesigner ? '✓' : '✗'}
+                    - DataManager: ${window.shelfDesigner?.dataManager ? '✓' : '✗'}
+                    - saveDesignToDatabase: ${window.shelfDesigner?.dataManager?.saveDesignToDatabase ? '✓' : '✗'}
+                    
+                    デバッグのため、ブラウザのコンソールをご確認ください。`;
+                }
+                
+                alert(errorMessage);
             }
         });
     } else {

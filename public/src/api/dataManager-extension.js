@@ -35,7 +35,18 @@ function addDataManagerExtensions() {
             }
         } catch (error) {
             console.error('データベース保存エラー:', error);
-            this.showSaveMessage(`保存エラー: ${error.message}`, 'error');
+            console.log('API呼び出し詳細:', {
+                url: window.shelfDesignerAPI?.baseURL + window.shelfDesignerAPI?.apiPath + '/designs',
+                error: error.message,
+                apiClient: window.shelfDesignerAPI
+            });
+            
+            let errorMessage = `保存エラー: ${error.message}`;
+            if (error.message.includes('fetch')) {
+                errorMessage += `\n\nネットワークエラーの可能性があります。URLを確認してください。`;
+            }
+            
+            this.showSaveMessage(errorMessage, 'error');
             throw error;
         }
     };
