@@ -1,0 +1,26 @@
+# Cloudflare Pages デプロイ除外設定
+# publicディレクトリ以外はすべて除外
+
+# ルートファイル - publicディレクトリのみ配信
+/*
+!/public/
+
+# Node.js関連 - 完全除外
+node_modules/
+package*.json
+tsconfig.json
+
+# 開発ファイル - 完全除外
+src/
+functions/
+migrations/
+docs/
+*.md
+wrangler.toml
+
+# その他 - 完全除外
+.git/
+.wrangler/
+.env*
+.DS_Store
+*.log
