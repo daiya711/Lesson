@@ -42,6 +42,9 @@ class ShelfDesigner {
             this.dataManager = new DataManager();
             console.log('DataManager初期化完了:', this.dataManager);
             
+            // DataManager拡張メソッドを直接追加（確実な実行のため）
+            this.addDataManagerExtensions();
+            
             // DataManager初期化完了イベントを発火
             window.dispatchEvent(new CustomEvent('dataManagerReady', { 
                 detail: { dataManager: this.dataManager } 
@@ -199,6 +202,182 @@ class ShelfDesigner {
         this.eventManager.on('keyPressed', ({ key, event }) => {
             this.handleKeyPress(key, event);
         });
+    }
+    
+    addDataManagerExtensions() {
+        // DataManager拡張メソッドを直接追加
+        console.log('DataManager拡張メソッドを追加開始');
+        console.log('DataManager インスタンス:', this.dataManager);
+        console.log('DataManager コンストラクタ:', this.dataManager?.constructor?.name);
+        
+        if (!this.dataManager) {
+            console.error('DataManager not available for extension');
+            return;
+        }
+        
+        // データベースに設計を保存
+        this.dataManager.saveDesignToDatabase = async function(title) {
+            try {
+                const shelfDesigner = window.shelfDesigner;
+                const templateData = shelfDesigner.templateManager.getTemplateData();
+                const boardsData = shelfDesigner.boardManager.getBoardsData();
+                
+                const designData = window.shelfDesignerAPI.prepareDesignData(templateData, boardsData);
+                
+                console.log('データベースに保存中...', { title, designData });
+                const result = await window.shelfDesignerAPI.saveDesign(title, designData);
+                
+                if (result.success) {
+                    console.log('データベース保存成功:', result.design);
+                    this.showSaveMessage('設計をデータベースに保存しました', 'success');
+                    return result.design;
+                } else {
+                    throw new Error(result.error || 'Save failed');
+                }
+            } catch (error) {
+                console.error('データベース保存エラー:', error);
+                console.log('API呼び出し詳細:', {
+                    url: window.shelfDesignerAPI?.baseURL + window.shelfDesignerAPI?.apiPath + '/designs',
+                    error: error.message,
+                    apiClient: window.shelfDesignerAPI
+                });
+                
+                let errorMessage = `保存エラー: ${error.message}`;
+                if (error.message.includes('fetch')) {
+                    errorMessage += `\n\nネットワークエラーの可能性があります。URLを確認してください。`;
+                }
+                
+                this.showSaveMessage(errorMessage, 'error');
+                throw error;
+            }
+        };
+        
+        // データベースから設計を読み込み
+        this.dataManager.loadDesignFromDatabase = async function(designId) {
+            try {
+                console.log('データベースから読み込み中...', designId);
+                const designData = await window.shelfDesignerAPI.getDesign(designId);
+                
+                if (!designData) {
+                    throw new Error('設計データが見つかりません');
+                }
+
+                const parsed = window.shelfDesignerAPI.parseDesignData(designData.data);
+                const shelfDesigner = window.shelfDesigner;
+
+                // テンプレートデータの復元
+                if (parsed.template) {
+                    shelfDesigner.templateManager.loadTemplateData(parsed.template);
+                }
+
+                // 個別板データの復元
+                if (parsed.boards && parsed.boards.length > 0) {
+                    shelfDesigner.boardManager.loadBoardsData(parsed.boards);
+                }
+
+                // UI更新
+                shelfDesigner.updateUI();
+                
+                console.log('データベース読み込み成功:', designData);
+                this.showSaveMessage('設計をデータベースから読み込みました', 'success');
+                return designData;
+            } catch (error) {
+                console.error('データベース読み込みエラー:', error);
+                this.showSaveMessage(`読み込みエラー: ${error.message}`, 'error');
+                throw error;
+            }
+        };
+        
+        // 保存済み設計一覧を取得
+        this.dataManager.getSavedDesigns = async function() {
+            try {
+                const designs = await window.shelfDesignerAPI.getDesigns();
+                console.log('保存済み設計一覧:', designs);
+                return designs;
+            } catch (error) {
+                console.error('設計一覧取得エラー:', error);
+                this.showSaveMessage(`一覧取得エラー: ${error.message}`, 'error');
+                return [];
+            }
+        };
+        
+        // 設計を削除
+        this.dataManager.deleteDesignFromDatabase = async function(designId) {
+            try {
+                console.log('データベースから削除中...', designId);
+                const result = await window.shelfDesignerAPI.deleteDesign(designId);
+                
+                if (result.success) {
+                    console.log('データベース削除成功');
+                    this.showSaveMessage('設計を削除しました', 'success');
+                    return true;
+                } else {
+                    throw new Error(result.error || 'Delete failed');
+                }
+            } catch (error) {
+                console.error('データベース削除エラー:', error);
+                this.showSaveMessage(`削除エラー: ${error.message}`, 'error');
+                throw error;
+            }
+        };
+        
+        // メッセージ表示ヘルパー
+        this.dataManager.showSaveMessage = function(message, type = 'info') {
+            // 既存のUI要素を利用するか、新しく作成
+            let messageContainer = document.getElementById('apiMessage');
+            if (!messageContainer) {
+                messageContainer = document.createElement('div');
+                messageContainer.id = 'apiMessage';
+                messageContainer.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1000;
+                    padding: 12px 20px; border-radius: 8px; font-size: 14px;
+                    max-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+                document.body.appendChild(messageContainer);
+            }
+
+            const colors = {
+                success: { bg: '#d4edda', border: '#c3e6cb', text: '#155724' },
+                error: { bg: '#f8d7da', border: '#f5c6cb', text: '#721c24' },
+                info: { bg: '#d1ecf1', border: '#bee5eb', text: '#0c5460' }
+            };
+
+            const color = colors[type] || colors.info;
+            messageContainer.style.backgroundColor = color.bg;
+            messageContainer.style.borderLeft = `4px solid ${color.border}`;
+            messageContainer.style.color = color.text;
+            messageContainer.textContent = message;
+            messageContainer.style.display = 'block';
+
+            // 3秒後に自動で非表示
+            setTimeout(() => {
+                if (messageContainer) {
+                    messageContainer.style.display = 'none';
+                }
+            }, 3000);
+        };
+        
+        console.log('DataManager拡張メソッド追加完了:', {
+            saveDesignToDatabase: typeof this.dataManager.saveDesignToDatabase,
+            loadDesignFromDatabase: typeof this.dataManager.loadDesignFromDatabase,
+            getSavedDesigns: typeof this.dataManager.getSavedDesigns,
+            deleteDesignFromDatabase: typeof this.dataManager.deleteDesignFromDatabase
+        });
+        
+        // グローバルデバッグ関数追加
+        window.debugDataManager = () => {
+            console.log('=== DataManager Debug Info ===');
+            console.log('ShelfDesigner:', window.shelfDesigner);
+            console.log('DataManager:', window.shelfDesigner?.dataManager);
+            console.log('API Client:', window.shelfDesignerAPI);
+            console.log('拡張メソッド確認:', {
+                saveDesignToDatabase: typeof window.shelfDesigner?.dataManager?.saveDesignToDatabase,
+                loadDesignFromDatabase: typeof window.shelfDesigner?.dataManager?.loadDesignFromDatabase,
+                getSavedDesigns: typeof window.shelfDesigner?.dataManager?.getSavedDesigns,
+                deleteDesignFromDatabase: typeof window.shelfDesigner?.dataManager?.deleteDesignFromDatabase
+            });
+            console.log('=============================');
+        };
     }
     
     convertTemplateToIndividual() {
@@ -386,13 +565,13 @@ class TemplateManager {
             size: { ...this.defaultSize },
             position: { x: 0, y: 0, z: 0 },
             boards: {
-                top: { type: 'top', enabled: true, thickness: 18, mesh: null },
-                bottom: { type: 'bottom', enabled: true, thickness: 18, mesh: null },
-                left: { type: 'left', enabled: true, thickness: 18, mesh: null },
-                right: { type: 'right', enabled: true, thickness: 18, mesh: null },
-                back: { type: 'back', enabled: true, thickness: 18, mesh: null }
+                top: { type: 'top', enabled: true, thickness: 1.8, mesh: null },
+                bottom: { type: 'bottom', enabled: true, thickness: 1.8, mesh: null },
+                left: { type: 'left', enabled: true, thickness: 1.8, mesh: null },
+                right: { type: 'right', enabled: true, thickness: 1.8, mesh: null },
+                back: { type: 'back', enabled: true, thickness: 1.8, mesh: null }
             },
-            material: { type: 'pine', thickness: 18, finish: 'natural', color: 'natural' },
+            material: { type: 'pine', thickness: 1.8, finish: 'natural', color: 'natural' },
             createdAt: new Date(),
             updatedAt: new Date()
         };
@@ -607,7 +786,7 @@ class BoardManager {
             rotation: { x: 0, y: 0, z: 0 },
             material: {
                 type: 'pine',
-                thickness: 18,
+                thickness: 1.8,
                 finish: 'natural',
                 color: 'natural'
             },
@@ -1044,6 +1223,7 @@ class EventManager {
                     break;
                 default:
                     console.log('不明なオブジェクトクリック:', userData);
+                    this.emit('backgroundClicked');
             }
         } else {
             console.log('背景クリック検出');
@@ -1509,7 +1689,7 @@ class UIManager {
     
     createStructureCheckButton() {
         // データ管理セクションの後に構造チェックセクションを動的作成
-        const dataSection = document.querySelector('.control-group:has(#saveDesign)');
+        const dataSection = document.getElementById('dataSection');
         console.log('データ管理セクション検索結果:', dataSection);
         
         if (dataSection && !document.getElementById('structureCheck')) {
@@ -1541,7 +1721,6 @@ class UIManager {
             }
         } else {
             console.warn('構造チェックボタン作成条件が満たされません:', {dataSection, existingButton: document.getElementById('structureCheck')});
-        }
         }
     }
     
@@ -1872,14 +2051,14 @@ class StructureChecker {
         switch (boardType) {
             case 'top':
             case 'bottom':
-                return { length: width, width: depth, thickness: 18 };
+                return { length: width, width: depth, thickness: 1.8 };
             case 'left':
             case 'right':
-                return { length: height, width: depth, thickness: 18 };
+                return { length: height, width: depth, thickness: 1.8 };
             case 'back':
-                return { length: width, width: height, thickness: 18 };
+                return { length: width, width: height, thickness: 1.8 };
             default:
-                return { length: 0, width: 0, thickness: 18 };
+                return { length: 0, width: 0, thickness: 1.8 };
         }
     }
     
@@ -2001,7 +2180,7 @@ class DataManager {
                     precision: 1,
                     defaultMaterial: {
                         type: 'pine',
-                        thickness: 18,
+                        thickness: 1.8,
                         finish: 'natural',
                         color: 'natural'
                     }
@@ -2083,7 +2262,7 @@ class DataManager {
                 Object.values(templateData.boards).forEach((board, index) => {
                     if (board.enabled) {
                         const dimensions = this.getTemplateBoardDimensions(board.type, templateData.size);
-                        csvContent += `${this.getBoardTypeName(board.type)},テンプレート板,${dimensions.length},${dimensions.width},${dimensions.thickness / 10},"${templateData.material.type}",1\n`;
+                        csvContent += `${this.getBoardTypeName(board.type)},テンプレート板,${dimensions.length},${dimensions.width},${dimensions.thickness},"${templateData.material.type}",1\n`;
                     }
                 });
             }
@@ -2131,6 +2310,8 @@ class DataManager {
             
             canvas.width = 1920;
             canvas.height = 1080;
+            shelfDesigner.viewportManager.camera.aspect = 1920 / 1080;
+            shelfDesigner.viewportManager.camera.updateProjectionMatrix();
             shelfDesigner.viewportManager.renderer.setSize(1920, 1080);
             shelfDesigner.viewportManager.render();
             
@@ -2148,6 +2329,8 @@ class DataManager {
                 // 元のサイズに戻す
                 canvas.width = originalWidth;
                 canvas.height = originalHeight;
+                shelfDesigner.viewportManager.camera.aspect = originalWidth / originalHeight;
+                shelfDesigner.viewportManager.camera.updateProjectionMatrix();
                 shelfDesigner.viewportManager.renderer.setSize(originalWidth, originalHeight);
                 shelfDesigner.viewportManager.render();
                 
@@ -2167,14 +2350,14 @@ class DataManager {
         switch (boardType) {
             case 'top':
             case 'bottom':
-                return { length: width, width: depth, thickness: 18 };
+                return { length: width, width: depth, thickness: 1.8 };
             case 'left':
             case 'right':
-                return { length: height, width: depth, thickness: 18 };
+                return { length: height, width: depth, thickness: 1.8 };
             case 'back':
-                return { length: width, width: height, thickness: 18 };
+                return { length: width, width: height, thickness: 1.8 };
             default:
-                return { length: 0, width: 0, thickness: 18 };
+                return { length: 0, width: 0, thickness: 1.8 };
         }
     }
     
