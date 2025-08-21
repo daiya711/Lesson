@@ -5,7 +5,6 @@ compatibility_date = "2025-01-20"
 pages_build_output_dir = "public"
 
 # Pages Functions設定
-[env.production]
 compatibility_flags = ["nodejs_compat"]
 
 # D1 Database binding

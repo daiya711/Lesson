@@ -1,7 +1,16 @@
 {
   "version": 1,
   "include": [
-    "/api/*"
+    "/api/health",
+    "/api/designs",
+    "/api/designs/*"
   ],
-  "exclude": []
+  "exclude": [
+    "/",
+    "/index.html",
+    "/app.js",
+    "/src/*",
+    "/_headers",
+    "/assets/*"
+  ]
 }
