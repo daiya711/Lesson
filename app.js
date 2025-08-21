@@ -577,6 +577,23 @@ class TemplateManager {
         
         // 各板を作成
         Object.values(this.boxTemplate.boards).forEach(board => {
+            // 既存meshの確実な削除（有効・無効問わず）
+            if (board.mesh) {
+                this.templateGroup.remove(board.mesh);
+                if (board.mesh.geometry) {
+                    board.mesh.geometry.dispose();
+                }
+                if (board.mesh.material) {
+                    if (Array.isArray(board.mesh.material)) {
+                        board.mesh.material.forEach(mat => mat.dispose());
+                    } else {
+                        board.mesh.material.dispose();
+                    }
+                }
+                board.mesh = null;
+            }
+            
+            // 有効な板のみ新しいmeshを生成・追加
             if (board.enabled) {
                 board.mesh = this.createBoardMesh(board.type, width, height, depth, thickness);
                 board.mesh.userData = {
@@ -585,9 +602,6 @@ class TemplateManager {
                     templateId: this.boxTemplate.id
                 };
                 this.templateGroup.add(board.mesh);
-            } else {
-                // 無効化された板のmeshをクリア
-                board.mesh = null;
             }
         });
         
@@ -719,7 +733,9 @@ class BoardManager {
                 thickness: 1.8
             },
             orientation: orientation,
-            rotation: { x: 0, y: 0, z: 0 },
+            rotation: orientation === 'vertical' 
+                ? { x: 0, y: 90, z: 0 }  // 垂直板はY軸90度回転で立てる
+                : { x: 0, y: 0, z: 0 },
             material: {
                 type: 'pine',
                 thickness: 1.8,
