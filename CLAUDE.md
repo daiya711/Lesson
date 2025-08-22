@@ -1,5 +1,63 @@
 - 常に日本語で話して
 
+## プロジェクト概要
+収納棚設計・デザインプラットフォーム
+- 3Dビジュアライゼーション（Three.js）
+- バックエンド: Hono Framework + TypeScript
+- データベース: Cloudflare D1 (SQLite)
+- デプロイ: Cloudflare Pages
+
 ## 用語定義
 - **段数**: 底板＋棚板の数（天板は含めない）
 - **棚板**: 天板と底板の間にある板
+
+## 開発ガイドライン
+
+### 基本方針
+- TypeScriptを使用し、型安全性を重視
+- Three.jsを用いた3D描画機能の維持・改善
+- Cloudflare D1を活用したデータ永続化
+- レスポンシブデザインによるマルチデバイス対応
+
+### コード品質
+- ESLintとPrettierを使用したコード整形
+- PlaywrightによるE2Eテストの実装
+- **Vitestによるユニットテストの実装**
+- Git commitメッセージは日本語で記述
+- 機能ごとにブランチを作成し、PRベースの開発
+
+### テスト戦略
+- `/tests/`ディレクトリ内のPlaywrightテスト（E2E）を維持
+- `/tests/unit/`ディレクトリでVitestユニットテスト
+- **データ変換関数の純粋関数テスト重視**
+- 新機能追加時は対応するテストも追加
+- E2Eテスト実行: `npm run test`
+- **ユニットテスト実行: `npm run test:unit`**
+- テストUI: `npm run test:ui` / `npm run test:unit:ui`
+
+### 開発環境
+- 開発サーバー: `npm run dev` (http://localhost:8788)
+- Wrangler v4を使用（Cloudflare D1対応）
+- Node.js 18以上を推奨
+
+### データベース操作
+- D1データベースはローカル開発時もSQLiteファイルとして動作
+- マイグレーション実行: `npx wrangler d1 migrations apply shelf-design-db --local`
+- スキーマ変更は必ずマイグレーションファイルで管理
+
+### デプロイメント
+- Cloudflare Pagesによる自動デプロイ
+- 本番データベースへの反映: `npx wrangler d1 migrations apply shelf-design-db`
+
+### パフォーマンス指標
+- 3D描画レンダリング時間の最適化
+- Webpackバンドルサイズの管理
+- Lighthouse スコア維持（Performance: 90+）
+
+### ユニットテスト実装方針
+- **壊れて欲しくない純粋関数を最小単位でテスト**
+- データ構造を保存できる形式に変換する部分のテスト
+- 保存されたデータ構造を表示できる形式に変換する部分のテスト
+- `src/utils/data-converters.js`のprepareDesignData, parseDesignData関数
+- Vitestフレームワークで高速・軽量なテスト実行
+- 詳細: [ユニットテスト戦略](docs/unit-testing-strategy.md)
