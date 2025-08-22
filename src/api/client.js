@@ -2,6 +2,8 @@
  * 収納棚設計プラットフォーム - API Client
  * Hono + Cloudflare D1 Database 連携
  */
+import { prepareDesignData, parseDesignData } from '../utils/data-converters.js';
+
 class ShelfDesignerAPI {
     constructor() {
         this.baseURL = window.location.origin;
@@ -96,42 +98,14 @@ class ShelfDesignerAPI {
      * 設計データをデータベース形式に変換
      */
     prepareDesignData(templateData, boardsData) {
-        return {
-            version: "1.0",
-            metadata: {
-                title: "収納棚設計",
-                createdAt: new Date().toISOString(),
-                platform: "Shelf Designer v1.0"
-            },
-            template: templateData,
-            boards: boardsData,
-            settings: {
-                units: "cm",
-                material: "pine",
-                thickness: 18
-            }
-        };
+        return prepareDesignData(templateData, boardsData);
     }
 
     /**
      * データベースから読み込んだデータを解析
      */
     parseDesignData(designData) {
-        if (typeof designData === 'string') {
-            try {
-                designData = JSON.parse(designData);
-            } catch (error) {
-                console.error('Design data parse error:', error);
-                return null;
-            }
-        }
-
-        return {
-            template: designData.template || null,
-            boards: designData.boards || [],
-            metadata: designData.metadata || {},
-            settings: designData.settings || {}
-        };
+        return parseDesignData(designData);
     }
 }
 
